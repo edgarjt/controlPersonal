@@ -31,6 +31,13 @@ Route::middleware('auth.jwt')->group( function () {
         Route::put('updateUser', 'UsersController@updateUser');
         Route::put('theme', 'UsersController@theme');
     });
+
+    Route::prefix('roles')->group(function () {
+        Route::get('getRoles', 'RolesController@getRoles');
+        Route::post('addRole', 'RolesController@addRole');
+        Route::delete('deleteRole', 'RolesController@deleteRole');
+        Route::put('updateRole', 'RolesController@updateRole');
+    });
 });
 
 Route::prefix('auth')->group(function () {
