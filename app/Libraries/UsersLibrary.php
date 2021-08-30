@@ -56,7 +56,7 @@ class UsersLibrary
             $user->save();
 
             if (!is_null($user)){
-                $userWithRole = User::where('id', $user->id)->with('role')->first();
+                $userWithRole = User::where('id', $user->id)->with('role')->with('workPosition')->first();
                 return response()->json(['status' => true, 'message' => 'Datos guardados correctamente', 'data'=>$userWithRole]);
             }
 
@@ -120,11 +120,10 @@ class UsersLibrary
                 return response()->json(['status' => false, 'message' => 'Usuario no encontrado'], 404);
 
             $user->fill($request->all());
-            $user->role_id = $request->role_id;
             $user->update();
 
             if (!is_null($user)){
-                $userWithRole = User::where('id', $user->id)->with('role')->first();
+                $userWithRole = User::where('id', $user->id)->with('role')->with('workPosition')->first();
                 return response()->json(['status' => true, 'message' => 'Datos actualizados correctamente', 'data'=>$userWithRole]);
             }
 
