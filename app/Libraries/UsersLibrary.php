@@ -89,7 +89,7 @@ class UsersLibrary
         } catch (\Throwable $e) {
 
             logger('Deleted user: ' . $e);
-            return response()->json(['status' => true, 'message' => 'Internal Server error', 'data' => $user],500);
+            return response()->json(['status' => true, 'message' => 'Internal Server error'],500);
         }
     }
 
@@ -114,6 +114,7 @@ class UsersLibrary
                 return response()->json(['status' => false, 'message' => 'Usuario no encontrado'], 404);
 
             $user->fill($request->all());
+            $user->role_id = $request->role_id;
             $user->update();
 
             if (!is_null($user)){
