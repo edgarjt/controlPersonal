@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Models\CatRoleModel;
+use App\Models\WorkPositionModel;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -28,7 +29,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password',
+        'name', 'first_surname', 'last_surname', 'email', 'rfc', 'password', 'theme', 'role_id', 'work_id'
     ];
 
     /**
@@ -54,5 +55,12 @@ class User extends Authenticatable implements JWTSubject
      */
     public function role() {
         return $this->belongsTo(CatRoleModel::class, 'role_id');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function workPosition() {
+        return $this->belongsTo(WorkPositionModel::class, 'work_id');
     }
 }

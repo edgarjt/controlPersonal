@@ -13,7 +13,7 @@ class UsersLibrary
 {
     public function getUsers() {
         try {
-            $users = User::with('role')->get();
+            $users = User::with('role')->with('workPosition')->get();
 
             if (is_null($users))
                 return response()->json(['status' => false, 'message' => 'Ocurrio un error inesperado'], 404);
@@ -33,8 +33,10 @@ class UsersLibrary
                 'first_surname' => 'required',
                 'last_surname' => 'required',
                 'email' => 'required|unique:users',
+                'rfc' => 'required',
                 'password' => 'required',
-                'role_id' => 'required'
+                'role_id' => 'required',
+                'work_id' => 'required'
             ]);
 
             if ($validator->fails()) {
@@ -46,9 +48,11 @@ class UsersLibrary
             $user->first_surname = $request->first_surname;
             $user->last_surname = $request->last_surname;
             $user->email = $request->email;
+            $user->rfc = $request->rfc;
             $user->password = Hash::make($request->password);
             $user->theme = UserConstant::THEME;
             $user->role_id = $request->role_id;
+            $user->work_id = $request->work_id;
             $user->save();
 
             if (!is_null($user)){
@@ -101,7 +105,9 @@ class UsersLibrary
                 'first_surname' => 'required',
                 'last_surname' => 'required',
                 'email' => "required|unique:users,email,{$request->id}",
-                'role_id' => 'required'
+                'rfc' => 'required',
+                'role_id' => 'required',
+                'work_id' => 'required'
             ]);
 
             if ($validator->fails()) {

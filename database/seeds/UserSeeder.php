@@ -25,6 +25,7 @@ class UserSeeder extends Seeder
                 'first_surname' => 'Root',
                 'last_surname' => 'Root',
                 'email' => UserConstant::EMAIL,
+                'RFC' => UserConstant::RFC,
                 'password' => Hash::make(UserConstant::PASSWORD),
                 'theme' => UserConstant::THEME,
                 'role_id' => $systemRole->id

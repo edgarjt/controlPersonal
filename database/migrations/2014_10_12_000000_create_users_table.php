@@ -19,14 +19,17 @@ class CreateUsersTable extends Migration
             $table->string('first_surname');
             $table->string('last_surname');
             $table->string('email')->unique();
+            $table->string('rfc')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->text('password');
             $table->string('theme');
             $table->rememberToken();
             $table->unsignedBigInteger('role_id');
+            $table->unsignedBigInteger('work_id')->nullable();
             $table->timestamps();
 
             $table->foreign('role_id')->references('id')->on('cat_roles');
+            $table->foreign('work_id')->references('id')->on('workPosition');
         });
     }
 

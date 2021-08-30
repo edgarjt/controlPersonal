@@ -38,6 +38,13 @@ Route::middleware('auth.jwt')->group( function () {
         Route::delete('deleteRole', 'RolesController@deleteRole');
         Route::put('updateRole', 'RolesController@updateRole');
     });
+
+    Route::prefix('work')->group(function () {
+        Route::get('getWorks', 'WorkPositionController@getWorksPosition');
+        Route::post('addWork', 'WorkPositionController@addWorkPosition');
+        Route::delete('deleteWork', 'WorkPositionController@deleteWorkPosition');
+        Route::put('updateWork', 'WorkPositionController@updateWorkPosition');
+    });
 });
 
 Route::prefix('auth')->group(function () {
