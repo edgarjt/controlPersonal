@@ -40,8 +40,7 @@ class AuthLibrary
                 'messaje' => 'Bienvenido ' . $userData->name . ' ' . $userData->surname,
                 'userData' => $userData,
                 'access_token' => $token,
-                'token_type' => 'bearer',
-                'expires_in' => JWTAuth::factory()->getTTL() * 1440
+                'token_type' => 'bearer'
 
             ]);
         }catch (\Throwable $e) {
