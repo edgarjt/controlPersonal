@@ -55,3 +55,5 @@ Route::prefix('auth')->group(function () {
         Route::post('me', 'AuthController@me');
     });
 });
+
+Route::post('addUserGeneral', 'UsersController@addUser');

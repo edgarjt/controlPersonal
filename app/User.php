@@ -29,7 +29,28 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $fillable = [
-        'name', 'first_surname', 'last_surname', 'email', 'rfc', 'password', 'theme', 'role_id', 'work_id'
+        'name',
+        'first_surname',
+        'last_surname',
+        'nacimiento',
+        'curp',
+        'rfc',
+        'street',
+        'betweenStreet',
+        'city',
+        'cp',
+        'genero',
+        'date',
+        'dep',
+        'depa',
+        'cargo',
+        'email',
+        'phone',
+        'boss',
+        'password',
+        'theme',
+        'role_id',
+        'state'
     ];
 
     /**
@@ -55,12 +76,5 @@ class User extends Authenticatable implements JWTSubject
      */
     public function role() {
         return $this->belongsTo(CatRoleModel::class, 'role_id');
-    }
-
-    /**
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function workPosition() {
-        return $this->belongsTo(WorkPositionModel::class, 'work_id');
     }
 }

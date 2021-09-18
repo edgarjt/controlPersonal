@@ -5,9 +5,12 @@ namespace App\Libraries;
 
 
 use App\Constants\UserConstant;
+use App\Mail\SendPasswordMail;
 use App\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class UsersLibrary
 {
@@ -32,32 +35,65 @@ class UsersLibrary
                 'name' => 'required',
                 'first_surname' => 'required',
                 'last_surname' => 'required',
+                'nacimiento' => 'required',
+                'curp' => 'required|unique:users',
+                'rfc' => 'required|unique:users',
+                'street' => 'required',
+                'betweenStreet' => 'required',
+                'city' => 'required',
+                'cp' => 'required',
+                'genero' => 'required',
+                'date' => 'required',
+                'dep' => 'required',
+                'depa' => 'required',
+                'cargo' => 'required',
                 'email' => 'required|unique:users',
-                'rfc' => 'required',
-                'password' => 'required',
-                'role_id' => 'required',
-                'work_id' => 'required'
+                'phone' => 'required'
             ]);
 
             if ($validator->fails()) {
                 return response()->json(['status' => false, 'message' => 'Datos inválidos','error' => $validator->errors()], 404);
             }
 
+            if (is_null($request->password) || !$request->password || $request->password == '') {
+                $password = Str::random(5);
+                $email = $request->email;
+                $role = 2;
+
+                Mail::to($request->email)->send(new SendPasswordMail($password));
+            } else {
+                $password = $request->password;
+                $role = $request->role;
+            }
+
             $user = new User;
             $user->name = $request->name;
             $user->first_surname = $request->first_surname;
             $user->last_surname = $request->last_surname;
-            $user->email = $request->email;
+            $user->nacimiento = $request->nacimiento;
+            $user->curp = $request->curp;
             $user->rfc = $request->rfc;
-            $user->password = Hash::make($request->password);
+            $user->state = $request->state;
+            $user->street = $request->street;
+            $user->betweenStreet = $request->betweenStreet;
+            $user->city = $request->city;
+            $user->cp = $request->cp;
+            $user->genero = $request->genero;
+            $user->date = $request->date;
+            $user->dep = $request->dep;
+            $user->depa = $request->depa;
+            $user->cargo = $request->cargo;
+            $user->email = $request->email;
+            $user->phone = $request->phone;
+            $user->boss = $request->boss;
+            $user->password = Hash::make($password);
             $user->theme = UserConstant::THEME;
-            $user->role_id = $request->role_id;
-            $user->work_id = $request->work_id;
+            $user->role_id = $role;
             $user->save();
 
             if (!is_null($user)){
                 $userWithRole = User::where('id', $user->id)->with('role')->with('workPosition')->first();
-                return response()->json(['status' => true, 'message' => 'Datos guardados correctamente', 'data'=>$userWithRole]);
+                return response()->json(['status' => true, 'message' => 'Datos guardados correctamente', 'data' => $userWithRole, 'password' => $password]);
             }
 
             return response()->json(['status' => false, 'message' => 'Ocurrio un error inesperado al guardar los datos'],404);

@@ -33,7 +33,7 @@ class AuthLibrary
             }
 
             $data = JWTAuth::user();
-            $userData = User::where('id', $data->id)->with('role')->with('workPosition')->first();
+            $userData = User::where('id', $data->id)->with('role')->first();
 
             return response()->json([
                 'status' => true,
