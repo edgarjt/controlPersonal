@@ -7,16 +7,23 @@ namespace App\Libraries;
 use App\Constants\UserConstant;
 use App\Mail\SendPasswordMail;
 use App\User;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Intervention\Image\ImageManagerStatic as Image;
 
 class UsersLibrary
 {
+    const DIR_PATH = 'userProfile/';
+    const LOCAL_DISK = 'local';
+
     public function getUsers() {
         try {
-            $users = User::with('role')->with('workPosition')->get();
+            $users = User::with('role')->get();
 
             if (is_null($users))
                 return response()->json(['status' => false, 'message' => 'Ocurrio un error inesperado'], 404);
@@ -38,6 +45,7 @@ class UsersLibrary
                 'nacimiento' => 'required',
                 'curp' => 'required|unique:users',
                 'rfc' => 'required|unique:users',
+                'state' => 'required',
                 'street' => 'required',
                 'betweenStreet' => 'required',
                 'city' => 'required',
@@ -55,15 +63,15 @@ class UsersLibrary
                 return response()->json(['status' => false, 'message' => 'Datos inválidos','error' => $validator->errors()], 404);
             }
 
+            $verifyPassword = false;
+
             if (is_null($request->password) || !$request->password || $request->password == '') {
                 $password = Str::random(5);
-                $email = $request->email;
                 $role = 2;
-
-                Mail::to($request->email)->send(new SendPasswordMail($password));
+                $verifyPassword = true;
             } else {
                 $password = $request->password;
-                $role = $request->role;
+                $role = $request->role_id;
             }
 
             $user = new User;
@@ -92,8 +100,12 @@ class UsersLibrary
             $user->save();
 
             if (!is_null($user)){
-                $userWithRole = User::where('id', $user->id)->with('role')->with('workPosition')->first();
-                return response()->json(['status' => true, 'message' => 'Datos guardados correctamente', 'data' => $userWithRole, 'password' => $password]);
+                $userWithRole = User::where('id', $user->id)->with('role')->first();
+
+                if ($verifyPassword)
+                    Mail::to($request->email)->send(new SendPasswordMail($password));
+
+                return response()->json(['status' => true, 'message' => 'Datos guardados correctamente', 'data' => $userWithRole]);
             }
 
             return response()->json(['status' => false, 'message' => 'Ocurrio un error inesperado al guardar los datos'],404);
@@ -136,14 +148,24 @@ class UsersLibrary
     public function updateUser($request) {
         try {
             $validator = Validator::make($request->all(), [
-                'id' => 'required',
                 'name' => 'required',
                 'first_surname' => 'required',
                 'last_surname' => 'required',
+                'nacimiento' => 'required',
+                'curp' => "required|unique:users,curp,{$request->id}",
+                'rfc' => "required|unique:users,rfc,{$request->id}",
+                'state' => 'required',
+                'street' => 'required',
+                'betweenStreet' => 'required',
+                'city' => 'required',
+                'cp' => 'required',
+                'genero' => 'required',
+                'date' => 'required',
+                'dep' => 'required',
+                'depa' => 'required',
+                'cargo' => 'required',
                 'email' => "required|unique:users,email,{$request->id}",
-                'rfc' => 'required',
-                'role_id' => 'required',
-                'work_id' => 'required'
+                'phone' => 'required'
             ]);
 
             if ($validator->fails()) {
@@ -159,7 +181,7 @@ class UsersLibrary
             $user->update();
 
             if (!is_null($user)){
-                $userWithRole = User::where('id', $user->id)->with('role')->with('workPosition')->first();
+                $userWithRole = User::where('id', $user->id)->with('role')->first();
                 return response()->json(['status' => true, 'message' => 'Datos actualizados correctamente', 'data'=>$userWithRole]);
             }
 
@@ -198,6 +220,116 @@ class UsersLibrary
         } catch (\Throwable $e) {
             logger('Update user' . $e);
 
+        }
+    }
+
+    public function resetPassword(){
+        try {
+            $user = User::where('id', 1)->first();
+
+            if (is_null($user))
+                return response()->json(['status' => false, 'message' => 'Usuario no encontrado'], 404);
+
+            $password_verify = Hash::check('hola', $user->password);
+
+            if ($password_verify) {
+                $new_password = Hash::make('root');
+
+                $user->password = $new_password;
+                $user->update();
+
+                if (is_null($user))
+                    return response()->json(['status' => false, 'message' => 'Ocurrio un error inesperado'], 404);
+
+                return response()->json(['status' => true, 'message' => 'Contraseña actualizada correctamente', 'password' => $new_password]);
+            }
+
+            return response()->json(['status' => false, 'message' => 'La contraseña es incorrecta']);
+        } catch (\Throwable $e) {
+            logger($e);
+            return  response()->json(['status' => false, 'message' => 'Internal server error', 'code'=>500], 500);
+        }
+    }
+
+    public function addProfile($request) {
+        try {
+            $validators = Validator::make($request->all(), [
+                'id' => 'required',
+                'profile' => 'required|image'
+            ]);
+
+            if ($validators->fails())
+                return response()->json(['status' => false, 'message' => 'Datos invalidos'], 404);
+
+            $file = $request->file('profile');
+            $path_original = self::DIR_PATH . "/$request->id/original.png";
+            $path = self::DIR_PATH . "/$request->id/profile.png";
+
+            $save_original = Storage::disk(self::LOCAL_DISK)->put($path_original, File::get($file));
+
+            if ($save_original) {
+                $image_resize = Image::make($file)->resize(60, 60)->save();
+                Storage::disk(self::LOCAL_DISK)->put($path, $image_resize);
+
+                return response()->json(['status' => true, 'message' => 'Imagen guardado']);
+            }
+
+            return response()->json(['status' => false, 'message' => 'No se pudo guardar la imagen'], 404);
+
+        } catch (\Throwable $e) {
+            logger($e);
+            return  response()->json(['status' => false, 'message' => 'Internal server error', 'code'=>500], 500);
+        }
+    }
+
+    public function getProfile($id, $type) {
+        try {
+            $validators = Validator::make(['id' => $id, 'type' => $type], [
+                'id' => 'required|integer',
+                'type' => 'required'
+            ]);
+
+            if ($validators->fails())
+                return response()->json(['status' => false, 'message' => 'Datos invalidos'], 404);
+
+            $exists_file = Storage::disk(self::LOCAL_DISK)->exists(self::DIR_PATH . $id . "/$type.png");
+
+            if ($exists_file){
+                $file = Storage::disk(self::LOCAL_DISK)->get(self::DIR_PATH . $id . "/$type.png");
+                return Image::make($file)->response('png');
+            }
+
+
+            return response()->json(['status' => false, 'message' => 'No se encontro el archivo'], 404);
+
+
+        } catch (\Throwable $e) {
+            logger($e);
+            return  response()->json(['status' => false, 'message' => 'Internal server error', 'code'=>500], 500);
+        }
+    }
+
+    public function deleteProfile($id) {
+        try {
+            $validators = Validator::make(['id' => $id], [
+                'id' => 'required|integer'
+            ]);
+
+            if ($validators->fails())
+                return response()->json(['status' => false, 'message' => 'Datos invalidos'], 404);
+
+            $exists_dir = Storage::disk(self::LOCAL_DISK)->exists(self::DIR_PATH . $id);
+
+            if ($exists_dir) {
+                Storage::disk(self::LOCAL_DISK)->deleteDirectory(self::DIR_PATH . $id);
+                return response()->json(['status' => true, 'message' => 'Perfil borrado'], 200);
+            }
+
+            return response()->json(['status' => false, 'message' => 'Ocurrio un error inesperado'], 404);
+
+        } catch (\Throwable $e) {
+            logger($e);
+            return  response()->json(['status' => false, 'message' => 'Internal server error', 'code'=>500], 500);
         }
     }
 

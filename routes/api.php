@@ -30,6 +30,9 @@ Route::middleware('auth.jwt')->group( function () {
         Route::delete('deleteUser', 'UsersController@deleteUser');
         Route::put('updateUser', 'UsersController@updateUser');
         Route::put('theme', 'UsersController@theme');
+        Route::get('getProfile/{id}/{type}', 'UsersController@getProfile');
+        Route::post('profile', 'UsersController@addProfile');
+        Route::delete('deleteProfile/{id}', 'UsersController@deleteProfile');
     });
 
     Route::prefix('roles')->group(function () {
@@ -57,3 +60,7 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::post('addUserGeneral', 'UsersController@addUser');
+Route::get('resetPassword', 'UsersController@resetPassword');
+Route::post('profile', 'UsersController@addProfile');
+Route::delete('deleteProfile/{id}', 'UsersController@deleteProfile');
+Route::get('getProfile/{id}/{type}', 'UsersController@getProfile');

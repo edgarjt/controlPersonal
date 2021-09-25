@@ -55,4 +55,32 @@ class UsersController extends Controller
     public function theme(Request $request) {
         return $this->userLibrary->theme($request);
     }
+
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function resetPassword(){
+        return $this->userLibrary->resetPassword();
+    }
+
+    /**
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function addProfile(Request $request) {
+        return $this->userLibrary->addProfile($request);
+    }
+
+    /**
+     * @param $id
+     * @param $type
+     * @return \Illuminate\Http\JsonResponse|string
+     */
+    public function getProfile($id, $type) {
+        return $this->userLibrary->getProfile($id, $type);
+    }
+
+    public function deleteProfile($id) {
+        return $this->userLibrary->deleteProfile($id);
+    }
 }
