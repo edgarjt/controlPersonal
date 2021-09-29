@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Intervention\Image\ImageManagerStatic as Image;
+use function PHPUnit\Framework\isNull;
 
 class UsersLibrary
 {
@@ -243,11 +244,19 @@ class UsersLibrary
 
     public function resetPassword($request){
         try {
-            $validator = Validator::make($request->all(), [
-                'id' => 'required',
-                'passwordOld' => 'required',
-                'passwordNew' => 'required'
-            ]);
+            if (is_null($request->type)) {
+                $validator = Validator::make($request->all(), [
+                    'id' => 'required',
+                    'passwordOld' => 'required',
+                    'passwordNew' => 'required'
+                ]);
+            }else {
+                $validator = Validator::make($request->all(), [
+                    'id' => 'required',
+                    'passwordNew' => 'required'
+                ]);
+            }
+
 
             if ($validator->fails())
                 return response()->json(['status' => false, 'message' => 'Datos inválidos','error' => $validator->errors()], 404);
@@ -256,6 +265,18 @@ class UsersLibrary
 
             if (is_null($user))
                 return response()->json(['status' => false, 'message' => 'Usuario no encontrado'], 404);
+
+            if (!is_null($request->type)) {
+                $new_password = Hash::make($request->passwordNew);
+                $user->password = $new_password;
+                $user->update();
+
+                if (is_null($user))
+                    return response()->json(['status' => false, 'message' => 'Ocurrio un error inesperado'], 404);
+
+                return response()->json(['status' => true, 'message' => 'Contraseña actualizada correctamente']);
+            }
+
 
             $password_verify = Hash::check($request->passwordOld, $user->password);
 

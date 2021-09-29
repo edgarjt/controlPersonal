@@ -49,6 +49,10 @@ Route::middleware('auth.jwt')->group( function () {
         Route::delete('deleteWork', 'WorkPositionController@deleteWorkPosition');
         Route::put('updateWork', 'WorkPositionController@updateWorkPosition');
     });
+
+    Route::prefix('setting')->group(function () {
+        Route::post('updateSetting', 'SettingController@updateForm');
+    });
 });
 
 Route::prefix('auth')->group(function () {
@@ -65,3 +69,5 @@ Route::get('resetPassword', 'UsersController@resetPassword');
 Route::post('profile', 'UsersController@addProfile');
 Route::delete('deleteProfile/{id}', 'UsersController@deleteProfile');
 Route::get('getProfile/{id}/{type}', 'UsersController@getProfile');*/
+
+Route::get('getSetting/{code}', 'SettingController@getSetting');

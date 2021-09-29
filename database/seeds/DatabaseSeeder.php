@@ -14,5 +14,6 @@ class DatabaseSeeder extends Seeder
         $this->call(CatRoleSeeder::class);
         $this->call(UserSeeder::class);
         $this->call(WorkPositionSeeder::class);
+        $this->call(SettingSeeder::class);
     }
 }
