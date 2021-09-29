@@ -146,27 +146,45 @@ class UsersLibrary
     }
 
     public function updateUser($request) {
+
         try {
-            $validator = Validator::make($request->all(), [
-                'name' => 'required',
-                'first_surname' => 'required',
-                'last_surname' => 'required',
-                'nacimiento' => 'required',
-                'curp' => "required|unique:users,curp,{$request->id}",
-                'rfc' => "required|unique:users,rfc,{$request->id}",
-                'state' => 'required',
-                'street' => 'required',
-                'betweenStreet' => 'required',
-                'city' => 'required',
-                'cp' => 'required',
-                'genero' => 'required',
-                'date' => 'required',
-                'dep' => 'required',
-                'depa' => 'required',
-                'cargo' => 'required',
-                'email' => "required|unique:users,email,{$request->id}",
-                'phone' => 'required'
-            ]);
+            if (!is_null($request->type)) {
+                $validator = Validator::make($request->all(), [
+                    'name' => 'required',
+                    'first_surname' => 'required',
+                    'last_surname' => 'required',
+                    'nacimiento' => 'required',
+                    'curp' => "required|unique:users,curp,{$request->id}",
+                    'rfc' => "required|unique:users,rfc,{$request->id}",
+                    'state' => 'required',
+                    'street' => 'required',
+                    'betweenStreet' => 'required',
+                    'city' => 'required',
+                    'cp' => 'required',
+                    'genero' => 'required'
+                ]);
+            } else {
+                $validator = Validator::make($request->all(), [
+                    'name' => 'required',
+                    'first_surname' => 'required',
+                    'last_surname' => 'required',
+                    'nacimiento' => 'required',
+                    'curp' => "required|unique:users,curp,{$request->id}",
+                    'rfc' => "required|unique:users,rfc,{$request->id}",
+                    'state' => 'required',
+                    'street' => 'required',
+                    'betweenStreet' => 'required',
+                    'city' => 'required',
+                    'cp' => 'required',
+                    'genero' => 'required',
+                    'date' => 'required',
+                    'dep' => 'required',
+                    'depa' => 'required',
+                    'cargo' => 'required',
+                    'email' => "required|unique:users,email,{$request->id}",
+                    'phone' => 'required'
+                ]);
+            }
 
             if ($validator->fails()) {
                 return response()->json(['status' => false, 'message' => 'Datos inválidos','error' => $validator->errors()], 404);
@@ -223,17 +241,26 @@ class UsersLibrary
         }
     }
 
-    public function resetPassword(){
+    public function resetPassword($request){
         try {
-            $user = User::where('id', 1)->first();
+            $validator = Validator::make($request->all(), [
+                'id' => 'required',
+                'passwordOld' => 'required',
+                'passwordNew' => 'required'
+            ]);
+
+            if ($validator->fails())
+                return response()->json(['status' => false, 'message' => 'Datos inválidos','error' => $validator->errors()], 404);
+
+            $user = User::where('id', $request->id)->first();
 
             if (is_null($user))
                 return response()->json(['status' => false, 'message' => 'Usuario no encontrado'], 404);
 
-            $password_verify = Hash::check('hola', $user->password);
+            $password_verify = Hash::check($request->passwordOld, $user->password);
 
             if ($password_verify) {
-                $new_password = Hash::make('root');
+                $new_password = Hash::make($request->passwordNew);
 
                 $user->password = $new_password;
                 $user->update();
@@ -241,10 +268,10 @@ class UsersLibrary
                 if (is_null($user))
                     return response()->json(['status' => false, 'message' => 'Ocurrio un error inesperado'], 404);
 
-                return response()->json(['status' => true, 'message' => 'Contraseña actualizada correctamente', 'password' => $new_password]);
+                return response()->json(['status' => true, 'message' => 'Contraseña actualizada correctamente']);
             }
 
-            return response()->json(['status' => false, 'message' => 'La contraseña es incorrecta']);
+            return response()->json(['status' => false, 'message' => 'La contraseña es incorrecta'], 406);
         } catch (\Throwable $e) {
             logger($e);
             return  response()->json(['status' => false, 'message' => 'Internal server error', 'code'=>500], 500);

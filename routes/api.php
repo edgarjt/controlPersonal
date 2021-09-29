@@ -33,6 +33,7 @@ Route::middleware('auth.jwt')->group( function () {
         Route::get('getProfile/{id}/{type}', 'UsersController@getProfile');
         Route::post('profile', 'UsersController@addProfile');
         Route::delete('deleteProfile/{id}', 'UsersController@deleteProfile');
+        Route::post('resetPassword', 'UsersController@resetPassword');
     });
 
     Route::prefix('roles')->group(function () {
@@ -59,8 +60,8 @@ Route::prefix('auth')->group(function () {
     });
 });
 
-Route::post('addUserGeneral', 'UsersController@addUser');
+/*Route::post('addUserGeneral', 'UsersController@addUser');
 Route::get('resetPassword', 'UsersController@resetPassword');
 Route::post('profile', 'UsersController@addProfile');
 Route::delete('deleteProfile/{id}', 'UsersController@deleteProfile');
-Route::get('getProfile/{id}/{type}', 'UsersController@getProfile');
+Route::get('getProfile/{id}/{type}', 'UsersController@getProfile');*/

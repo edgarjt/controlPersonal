@@ -59,8 +59,8 @@ class UsersController extends Controller
     /**
      * @return \Illuminate\Http\JsonResponse
      */
-    public function resetPassword(){
-        return $this->userLibrary->resetPassword();
+    public function resetPassword(Request $request){
+        return $this->userLibrary->resetPassword($request);
     }
 
     /**
